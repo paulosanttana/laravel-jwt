@@ -10,7 +10,8 @@ Esse projeto utiliza Laravel 5.7 com Mysql.
 **Contents**
 
 - [Instalação JWT](#Instalação-JWT)
-
+- [Atualizar Token JWT](#Atualizar-Token-JWT)
+- [Recuperar usuário](#Recuperar-usuário)
 
 ## Instalação JWT
 
@@ -24,7 +25,7 @@ composer require tymon/jwt-auth:dev-develop --prefer-source
 ```
 2. Registrar `providers` em  `config/app.php`
 ```php
-// config/app.php
+// config\app.php
 
 'providers' => [
 
@@ -36,7 +37,7 @@ composer require tymon/jwt-auth:dev-develop --prefer-source
 
 2.1 Registrar alias
 ```php
-// config/app.php
+// config\app.php
 
 'aliases' => [
 
@@ -68,4 +69,66 @@ php artisan make:controller Auth\\AuthApiController
 Route::post('auth', 'Auth\AuthApiController@authenticate');
 ```
 
-5.2 Cria autenticação jwt
+5.2 Cria autenticação jwt (FALTA!!!)
+
+
+## Recuperar usuário
+
+6. Recuperar usuário, adicione no método `authenticate()` do `AuthApiController`, em seguida passe a variave no array do json.
+```php
+// Recuperar usuario
+$user = auth()->user();
+
+// all good so return the token
+return response()->json(compact('token', 'user'));
+```
+
+7. Usuário logado apartir do `Token`. Adicione método conforme manual.
+```php
+public function getAuthenticatedUser()
+{
+    try {
+
+        if (! $user = JWTAuth::parseToken()->authenticate()) {
+            return response()->json(['user_not_found'], 404);
+        }
+
+    } catch (Tymon\JWTAuth\Exceptions\TokenExpiredException $e) {
+
+        return response()->json(['token_expired'], $e->getStatusCode());
+
+    } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+
+        return response()->json(['token_invalid'], $e->getStatusCode());
+
+    } catch (Tymon\JWTAuth\Exceptions\JWTException $e) {
+
+        return response()->json(['token_absent'], $e->getStatusCode());
+
+    }
+
+    // the token is valid and we have found the user via the sub claim
+    return response()->json(compact('user'));
+}
+```
+
+7.1 Adicione rota para o método `getAuthenticatedUser()`. Deixar antes do grupo de rotas
+```php
+Route::get('me', 'Auth\AuthApiController@getAuthenticatedUser');
+```
+7.2 Faça teste pelo `Postmam`, passe a url `http://127.0.0.1:8000/api/me` com verto http `GET`, na guia `Headers` passe como parametro KEY: `Authorization` e VALUE: `Bearer + Token_Usuario` (token poderá ser obtido através da requisição 'POST' de login). Será retornado json com dados do usuário.
+
+Exemplo retorno json:
+```json
+{
+    "user": {
+        "id": 1,
+        "name": "José Santana",
+        "email": "josesantana@gmail.com",
+        "email_verified_at": null,
+        "created_at": "2020-01-08 23:42:05",
+        "updated_at": "2020-01-08 23:42:05"
+    }
+}
+```
+## Atualizar Token JWT
