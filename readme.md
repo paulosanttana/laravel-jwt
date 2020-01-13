@@ -24,6 +24,8 @@ composer require tymon/jwt-auth:dev-develop --prefer-source
 ```
 2. Registrar `providers` em  `config/app.php`
 ```php
+// config/app.php
+
 'providers' => [
 
     ...
@@ -34,6 +36,8 @@ composer require tymon/jwt-auth:dev-develop --prefer-source
 
 2.1 Registrar alias
 ```php
+// config/app.php
+
 'aliases' => [
 
     ...
