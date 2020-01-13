@@ -55,3 +55,17 @@ php artisan vendor:publish --provider="Tymon\JWTAuth\Providers\LaravelServicePro
 ```bash
 php artisan jwt:secret
 ```
+
+5. Criar controller dentro da pasta `Auth`
+```bash
+php artisan make:controller Auth\\AuthApiController
+```
+
+5.1 Criar rota
+```php
+// routes\api.php
+
+Route::post('auth', 'Auth\AuthApiController@authenticate');
+```
+
+5.2 Cria autenticação jwt
