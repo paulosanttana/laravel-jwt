@@ -10,8 +10,8 @@ Esse projeto utiliza Laravel 5.7 com Mysql.
 **Contents**
 
 - [Instalação JWT](#Instalação-JWT)
-- [Atualizar Token JWT](#Atualizar-Token-JWT)
 - [Recuperar usuário](#Recuperar-usuário)
+- [Atualizar Token JWT](#Atualizar-Token-JWT)
 
 ## Instalação JWT
 
@@ -132,3 +132,63 @@ Exemplo retorno json:
 }
 ```
 ## Atualizar Token JWT
+
+8. Adicona rota `auth-refresh` para método `refreshToken()`
+```php
+Route::post('auth-refresh', 'Auth\AuthApiController@refreshToken');
+```
+
+8.1 Adiciona método `refreshToken()`
+```php
+ public function refreshToken()
+    {
+        if (!$token = JWTAuth::getToken()) 
+            return response()->json(['error' => 'token_not_send'], 401);
+        
+        try {
+            $token = JWTAuth::refresh();
+        } catch (Tymon\JWTAuth\Exceptions\TokenInvalidException $e) {
+            return response()->json(['token_invalid'], $e->getStatusCode());
+        }
+
+        return response()->json(compact('token'));
+    }
+```
+
+## Restringir acesso via JWT na API.
+
+Fluxo: Ao logar no sistema é gerado Token e toda vez que for realizado uma requisição (GET, PUT, UPDATE, DELETE) deverá também enviar Token.
+
+**1º FORMA**
+9. Registrar middleware
+```php
+// app\Http\Kernel.php
+
+protected $routeMiddleware = [
+	...
+	'jwt.auth' => 'Tymon\JWTAuth\Middleware\GetUserFromToken',
+	'jwt.refresh' => 'Tymon\JWTAuth\Middleware\RefreshToken',
+];
+```
+
+9.1 Adicionar middleware como paramentro no grupo de rotas.
+```php
+Route::group([
+    'prefix' => 'v1', 
+    'namespace' => 'Api\v1', 
+    'middleware' => 'jwt.auth'  //Adicondo middleware
+], function(){
+    
+    ... 
+
+});
+```
+
+**2º FORMA**
+
+9.3 No array `'guards'` alterar array `'api'` no valor `'driver'` para `jwt`. 
+```php
+// config\auth.php
+
+
+```
