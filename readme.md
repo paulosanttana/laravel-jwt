@@ -159,7 +159,10 @@ Route::post('auth-refresh', 'Auth\AuthApiController@refreshToken');
 
 Fluxo: Ao logar no sistema é gerado Token e toda vez que for realizado uma requisição (GET, PUT, UPDATE, DELETE) deverá também enviar Token.
 
+Existe duas formas de fazer restrinção via JWT!
+
 **1º FORMA**
+
 9. Registrar middleware
 ```php
 // app\Http\Kernel.php
@@ -186,9 +189,51 @@ Route::group([
 
 **2º FORMA**
 
-9.3 No array `'guards'` alterar array `'api'` no valor `'driver'` para `jwt`. 
+9.3 No array `'guards'` alterar array `'api'` o tipo de driver para `jwt`. 
 ```php
 // config\auth.php
 
+ 'guards' => [
+        'web' => [
+            'driver' => 'session',
+            'provider' => 'users',
+        ],
 
+        'api' => [
+            'driver' => 'jwt',    //Alterado de token para 
+            'provider' => 'users',
+        ],
+    ],
+
+```
+
+9.4 Alterar valor do parametro `middleware` no grupo de rotas
+```php
+Route::group([
+    'prefix' => 'v1', 
+    'namespace' => 'Api\v1', 
+    'middleware' => 'auth:api'  //Aleterado 
+], function(){
+    ...
+```
+
+9.5 Adicione contrutor em `AuthApiController` para fazer verificação, onde todos os métodos serão passados middleware `'auth:api'` com excessão do método `authenticate()`, pois quando vai autenticar ainda não existe token.
+```php
+ public function __construct()
+{
+    // Em todos os métodos serão passados middleware 'auth:api' com excessão do método authenticate()
+    $this->middleware('auth:api', ['except' => ['authenticate']]);
+}
+```
+
+**Tratamento de Erros**
+
+10. Adicionar ao arquivo `Handler.php` que faz o tratamento de erro as excessões para `TokenExpiredException` e `TokenInvalidException`
+
+```php
+if ($exception instanceof Tymon\JWTAuth\Exceptions\TokenExpiredException)
+    return response()->json(['token_expired'], $exception->getStatusCode());
+        
+if ($exception instanceof Tymon\JWTAuth\Exceptions\TokenInvalidException)
+    return response()->json(['token_invalid'], $exception->getStatusCode());
 ```

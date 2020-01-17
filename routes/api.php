@@ -17,7 +17,7 @@ Route::get('me', 'Auth\AuthApiController@getAuthenticatedUser');
 Route::group([
     'prefix' => 'v1', 
     'namespace' => 'Api\v1', 
-    'middleware' => 'jwt.auth'  //Adicondo middleware
+    'middleware' => 'auth:api'  //Adicondo driver jwt definido no array guards[] do arquivo auth.php. 
 ], function(){
 
     Route::get('categories/{id}/products', 'CategoryController@products');

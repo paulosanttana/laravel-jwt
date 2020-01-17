@@ -9,6 +9,12 @@ use Tymon\JWTAuth\Exceptions\JWTException;
 
 class AuthApiController extends Controller
 {
+    public function __construct()
+    {
+        // Em todos os métodos serão passados middleware 'auth:api' com excessão do método authenticate()
+        $this->middleware('auth:api', ['except' => ['authenticate']]);
+    }
+
     public function authenticate(Request $request)
     {
         // grab credentials from the request
