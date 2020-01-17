@@ -236,4 +236,5 @@ if ($exception instanceof Tymon\JWTAuth\Exceptions\TokenExpiredException)
         
 if ($exception instanceof Tymon\JWTAuth\Exceptions\TokenInvalidException)
     return response()->json(['token_invalid'], $exception->getStatusCode());
+    
 ```
